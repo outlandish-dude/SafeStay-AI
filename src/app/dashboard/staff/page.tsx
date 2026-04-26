@@ -98,11 +98,11 @@ export default function StaffDashboard() {
       
       {/* Premium Header */}
       <div className="bg-[#0a1128] text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black mb-1 flex items-center gap-3 tracking-tight">
-              <Activity className="h-8 w-8 text-blue-400" /> Venue Operations Console
+              <Activity className="h-8 w-8 text-red-400" /> Venue Operations Console
             </h1>
             <p className="text-slate-400 font-medium">Monitor active alerts and coordinate initial response.</p>
           </div>
@@ -196,7 +196,7 @@ export default function StaffDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredIncidents.map(incident => (
             <Card key={incident.id} className="overflow-hidden border-slate-200 shadow-sm flex flex-col transition-shadow hover:shadow-xl rounded-2xl cursor-pointer group" onClick={() => setSelectedIncident(incident)}>
-              <div className={`h-2 w-full ${incident.severity === 'Critical' ? 'bg-red-600 animate-pulse' : incident.severity === 'High' ? 'bg-orange-500' : incident.severity === 'Medium' ? 'bg-yellow-400' : 'bg-blue-400'}`} />
+              <div className={`h-2 w-full ${incident.severity === 'Critical' ? 'bg-red-600 animate-pulse' : incident.severity === 'High' ? 'bg-orange-500' : incident.severity === 'Medium' ? 'bg-yellow-400' : 'bg-red-400'}`} />
               <CardContent className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-3">
                   <Badge variant={getSeverityBadge(incident.severity)} className="font-bold px-3">
@@ -207,7 +207,7 @@ export default function StaffDashboard() {
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-black mt-1 text-slate-900 group-hover:text-blue-600 transition-colors">{incident.incidentType}</h3>
+                <h3 className="text-xl font-black mt-1 text-slate-900 group-hover:text-red-600 transition-colors">{incident.incidentType}</h3>
                 
                 <div className="flex items-center gap-2 text-slate-600 mt-3 text-sm bg-slate-50 p-3 rounded-xl font-bold border border-slate-100">
                   <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
@@ -215,8 +215,8 @@ export default function StaffDashboard() {
                 </div>
 
                 <div className="mt-5 text-sm text-slate-700 bg-gradient-to-br from-[#0a1128] to-slate-900 text-white p-4 rounded-xl line-clamp-3 relative overflow-hidden">
-                  <div className="absolute right-0 bottom-0 p-2 opacity-20"><Zap className="h-10 w-10 text-blue-400"/></div>
-                  <span className="font-black text-blue-400 mr-2 uppercase text-[10px] flex items-center gap-1 mb-2 tracking-widest">
+                  <div className="absolute right-0 bottom-0 p-2 opacity-20"><Zap className="h-10 w-10 text-red-400"/></div>
+                  <span className="font-black text-red-400 mr-2 uppercase text-[10px] flex items-center gap-1 mb-2 tracking-widest">
                     <Zap className="h-3 w-3" /> AI Summary
                   </span>
                   <span className="font-medium">{incident.aiSummary}</span>
@@ -238,7 +238,7 @@ export default function StaffDashboard() {
         onClose={() => setSelectedIncident(null)}
         title={
           <div className="flex items-center gap-3">
-            <div className={`h-3 w-3 rounded-full ${selectedIncident?.severity === 'Critical' ? 'bg-red-500 animate-pulse' : 'bg-blue-500'}`}></div>
+            <div className={`h-3 w-3 rounded-full ${selectedIncident?.severity === 'Critical' ? 'bg-red-500 animate-pulse' : 'bg-stone-500'}`}></div>
             <span className="font-black text-xl">Incident Details</span>
           </div>
         }
@@ -249,11 +249,11 @@ export default function StaffDashboard() {
             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Precise Location</p>
-                <p className="flex items-center gap-2 text-sm font-bold text-slate-900"><MapPin className="h-4 w-4 text-blue-500" />{selectedIncident.location}</p>
+                <p className="flex items-center gap-2 text-sm font-bold text-slate-900"><MapPin className="h-4 w-4 text-stone-500" />{selectedIncident.location}</p>
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Reporter</p>
-                <p className="flex items-center gap-2 text-sm font-bold text-slate-900"><UserIcon className="h-4 w-4 text-blue-500" />{selectedIncident.reporterName}</p>
+                <p className="flex items-center gap-2 text-sm font-bold text-slate-900"><UserIcon className="h-4 w-4 text-stone-500" />{selectedIncident.reporterName}</p>
               </div>
               <div className="col-span-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Initial Description</p>
@@ -264,8 +264,8 @@ export default function StaffDashboard() {
             </div>
 
             <div className="bg-[#0a1128] border border-[#1a233a] p-6 rounded-2xl text-white relative overflow-hidden shadow-xl">
-              <div className="absolute top-0 right-0 p-4 opacity-10"><Zap className="h-24 w-24 text-blue-400" /></div>
-              <div className="relative z-10 flex items-center gap-2 mb-4 text-blue-400 font-black tracking-widest uppercase text-xs">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><Zap className="h-24 w-24 text-red-400" /></div>
+              <div className="relative z-10 flex items-center gap-2 mb-4 text-red-400 font-black tracking-widest uppercase text-xs">
                 <Zap className="h-4 w-4" /> AI Operational Insights
               </div>
               <div className="space-y-4">
@@ -274,7 +274,7 @@ export default function StaffDashboard() {
                   <p className="text-sm text-slate-200 font-medium leading-relaxed">{selectedIncident.aiSummary}</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                  <h4 className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-2">Recommended Immediate Actions</h4>
+                  <h4 className="text-[10px] font-black text-stone-300 uppercase tracking-widest mb-2">Recommended Immediate Actions</h4>
                   <p className="text-sm whitespace-pre-wrap text-slate-200 font-medium">{selectedIncident.aiPlaybook}</p>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function StaffDashboard() {
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
               <h4 className="font-black text-slate-900 text-xs tracking-widest uppercase mb-3 flex items-center gap-2">
-                <Search className="h-4 w-4 text-blue-600" /> Internal Notes
+                <Search className="h-4 w-4 text-red-600" /> Internal Notes
               </h4>
               <div className="flex gap-2">
                 <Input 
@@ -319,7 +319,7 @@ export default function StaffDashboard() {
             {selectedIncident.status === 'reported' && (
               <div className="pt-4 border-t border-slate-200 mt-6">
                 <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 h-14 text-lg font-black shadow-lg"
+                  className="w-full bg-red-600 hover:bg-red-700 h-14 text-lg font-black shadow-lg"
                   onClick={() => acknowledgeIncident(selectedIncident.id)}
                 >
                   <CheckCircle className="h-5 w-5 mr-2" /> Acknowledge Incident

@@ -1,13 +1,25 @@
 export type Role = 'guest' | 'staff' | 'responder' | 'admin';
+export type AuthProvider = 'password' | 'google';
+export type AccountStatus = 'active' | 'pending' | 'suspended';
 export type IncidentStatus = 'reported' | 'acknowledged' | 'assigned' | 'en_route' | 'in_progress' | 'escalated' | 'resolved';
 export type IncidentSeverity = 'Low' | 'Medium' | 'High' | 'Critical';
 
 export interface User {
   uid: string;
+  displayName?: string;
   name: string;
   email: string;
   role: Role;
+  provider?: AuthProvider;
+  status?: AccountStatus;
   createdAt: number;
+  updatedAt?: number;
+  approvedBy?: string;
+  approvedAt?: number;
+  isAdminAllowlisted?: boolean;
+  teamMember?: boolean;
+  lastLogin?: number;
+  activeResponder?: boolean;
 }
 
 export interface IncidentTimelineEvent {
@@ -33,7 +45,12 @@ export interface Incident {
   aiSafetyGuidance: string;
   aiEscalationRisk?: string;
   aiSuggestedTeam?: string;
+  aiImmediateActions?: string;
+  aiUrgencyLabel?: string;
+  aiConfidence?: string;
+  aiPreventiveRecommendations?: string;
   aiPostIncidentRecap?: string;
+  isSimulation?: boolean;
   status: IncidentStatus;
   assignedTo?: string[]; // Array of responder UIDs
   assignedNames?: string[]; // Array of responder names

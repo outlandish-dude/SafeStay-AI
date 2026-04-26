@@ -12,7 +12,7 @@ export async function analyzeIncident(incidentDetails: {
 
   const prompt = `
 You are a rapid response AI assistant.
-Analyze the following emergency incident report and return a JSON response exactly matching the structure requested. Do not include markdown formatting or backticks around the JSON.
+Analyze the following emergency incident report like an operations-grade emergency copilot. Return a JSON response exactly matching the structure requested. Do not include markdown formatting or backticks around the JSON.
 
 Incident Details:
 - Type: ${incidentDetails.incidentType}
@@ -25,8 +25,12 @@ Incident Details:
 - "summary": A concise 1-2 sentence summary of what is happening.
 - "playbook": 3-4 bullet points of immediate recommended actions for responders.
 - "safetyGuidance": Short safety instructions for the reporter.
-- "escalationRisk": A 1-sentence risk assessment if the situation worsens.
-- "suggestedTeam": The ideal role or team to handle this (e.g. "Security", "Medical", "Maintenance").
+- "immediateActions": 3 concise actions that staff should do in the next 2 minutes.
+- "escalationRisk": Must start with "Low", "Medium", or "High", followed by a short explanation.
+- "suggestedTeam": Must be one of "staff only", "responder", or "admin attention", followed by a short reason.
+- "urgencyLabel": Must be one of "Stable", "Watch", "Elevated", "Critical".
+- "confidence": Must be one of "Low", "Medium", "High".
+- "preventiveRecommendations": 2-3 concrete recommendations to prevent repeat incidents.
 `;
 
   try {
@@ -49,8 +53,12 @@ Incident Details:
       summary: parsed.summary || "Unable to generate summary.",
       playbook: parsed.playbook || "Standard emergency response protocol.",
       safetyGuidance: parsed.safetyGuidance || "Stay safe and wait for instructions.",
+      immediateActions: parsed.immediateActions || parsed.playbook || "Move people away from danger, notify staff, and dispatch the right responder.",
       escalationRisk: parsed.escalationRisk || "Monitor closely.",
-      suggestedTeam: parsed.suggestedTeam || "General Staff"
+      suggestedTeam: parsed.suggestedTeam || "General Staff",
+      urgencyLabel: parsed.urgencyLabel || "Watch",
+      confidence: parsed.confidence || "Medium",
+      preventiveRecommendations: parsed.preventiveRecommendations || "Review the area after resolution and correct any safety gaps."
     };
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
@@ -60,24 +68,31 @@ Incident Details:
       summary: "Incident reported: " + incidentDetails.incidentType,
       playbook: "1. Assess situation. 2. Dispatch available responder.",
       safetyGuidance: "Please remain calm and move to a safe area if needed.",
+      immediateActions: "Confirm the location, notify operations, and dispatch the closest available responder.",
       escalationRisk: "Standard monitoring required.",
-      suggestedTeam: "General Response Team"
+      suggestedTeam: "responder - standard response team",
+      urgencyLabel: "Watch",
+      confidence: "Medium",
+      preventiveRecommendations: "Inspect the area after closure and document corrective actions."
     };
   }
 }
 
-export async function generatePostIncidentRecap(incident: {incidentType: string, description: string, severity: string}) {
+export async function generatePostIncidentRecap(incident: {incidentType: string, description: string, severity: string, createdAt?: number, acknowledgedAt?: number, resolvedAt?: number}) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
 You are a rapid response AI assistant generating a post-incident recap.
 Review this resolved incident and return a raw JSON object with a single key "recap".
-The recap should be a professional 2-3 sentence summary of the resolution, acknowledging the response time and suggesting one preventive action.
+The recap should include what happened, approximate response time, whether the response target appears met, lessons learned, and prevention suggestions in 4-6 concise sentences.
 
 Incident:
 Type: ${incident.incidentType}
 Description: ${incident.description}
 Severity: ${incident.severity}
+Created At: ${incident.createdAt || "unknown"}
+Acknowledged At: ${incident.acknowledgedAt || "unknown"}
+Resolved At: ${incident.resolvedAt || "unknown"}
 `;
 
   try {

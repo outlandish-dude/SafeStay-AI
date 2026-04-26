@@ -22,7 +22,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const recap = await generatePostIncidentRecap({
       incidentType: incidentData.incidentType || 'Unknown',
       description: incidentData.description || 'No description provided',
-      severity: incidentData.severity || 'Unknown'
+      severity: incidentData.severity || 'Unknown',
+      createdAt: incidentData.createdAt,
+      acknowledgedAt: incidentData.acknowledgedAt,
+      resolvedAt: incidentData.resolvedAt
     });
 
     await updateDoc(docRef, { aiPostIncidentRecap: recap });

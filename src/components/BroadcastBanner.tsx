@@ -5,8 +5,15 @@ import { collection, query, orderBy, limit, onSnapshot, where } from "firebase/f
 import { db } from "@/lib/firebase/config";
 import { Megaphone, X } from "lucide-react";
 
+interface Broadcast {
+  id: string;
+  template?: string;
+  message?: string;
+  author?: string;
+}
+
 export function BroadcastBanner() {
-  const [broadcast, setBroadcast] = useState<any>(null);
+  const [broadcast, setBroadcast] = useState<Broadcast | null>(null);
   const [dismissedId, setDismissedId] = useState<string | null>(null);
 
   useEffect(() => {

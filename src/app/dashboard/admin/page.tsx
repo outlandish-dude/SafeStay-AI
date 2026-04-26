@@ -10,20 +10,26 @@ import { Input } from "@/components/ui/input";
 import { doc, updateDoc, collection, getDocs, arrayUnion, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { Activity, CheckCircle, Clock, MapPin, User as UserIcon, ListTodo, Search, Filter, Globe, Zap, AlertTriangle, TrendingUp, ShieldCheck, Download, Copy, RefreshCcw, Target, PlayCircle, Megaphone } from "lucide-react";
+import { Activity, CheckCircle, Clock, MapPin, User as UserIcon, Search, Filter, Globe, Zap, AlertTriangle, TrendingUp, ShieldCheck, Download, Copy, RefreshCcw, Target, PlayCircle, Megaphone, Users, UserCog, Ban } from "lucide-react";
 import { User, Incident } from "@/types";
 import { toast } from "sonner";
+import { isAdminAllowlisted } from "@/lib/access-control";
 
 export default function AdminDashboard() {
   const { incidents, loading } = useIncidents();
   const { userData } = useAuth();
   const [responders, setResponders] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [generatingRecap, setGeneratingRecap] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("All");
+  const [userProviderFilter, setUserProviderFilter] = useState("All");
+  const [userStatusFilter, setUserStatusFilter] = useState("All");
 
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [broadcastTemplate, setBroadcastTemplate] = useState("Avoid Area");
@@ -33,10 +39,40 @@ export default function AdminDashboard() {
     const fetchResponders = async () => {
       const usersSnap = await getDocs(collection(db, "users"));
       const usersData = usersSnap.docs.map(doc => doc.data() as User);
-      setResponders(usersData.filter(u => u.role === "responder" || u.role === "staff"));
+      setAllUsers(usersData);
+      setResponders(usersData.filter(u => u.role === "responder"));
     };
     fetchResponders();
   }, []);
+
+  const refreshUsers = async () => {
+    const usersSnap = await getDocs(collection(db, "users"));
+    const usersData = usersSnap.docs.map(doc => doc.data() as User);
+    setAllUsers(usersData);
+    setResponders(usersData.filter(u => u.role === "responder"));
+  };
+
+  const updateUserAccess = async (target: User, updates: Partial<User>, action: string) => {
+    if (!userData) return;
+    if (target.role === "admin" || isAdminAllowlisted(target.email)) {
+      toast.error("Allowlisted admins are protected from role edits here.");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "users", target.uid), {
+        ...updates,
+        updatedAt: Date.now(),
+        approvedBy: userData.uid,
+        approvedAt: Date.now()
+      });
+      toast.success(action);
+      await refreshUsers();
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to update access control.");
+    }
+  };
 
   const assignResponder = async (incidentId: string, responderId: string) => {
     if (!userData) return;
@@ -135,7 +171,7 @@ export default function AdminDashboard() {
     acc[inc.location] = (acc[inc.location] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  const hotspots = Object.entries(locationCounts).filter(([_, count]) => count >= 2).sort((a,b) => b[1] - a[1]);
+  const hotspots = Object.entries(locationCounts).filter(([, count]) => count >= 2).sort((a,b) => b[1] - a[1]);
 
   // Readiness Score
   const availableResponders = responders.length;
@@ -255,16 +291,25 @@ export default function AdminDashboard() {
     return true;
   });
 
+  const filteredUsers = allUsers.filter(user => {
+    const term = userSearch.toLowerCase();
+    if (term && !`${user.name || ""} ${user.displayName || ""} ${user.email || ""}`.toLowerCase().includes(term)) return false;
+    if (userRoleFilter !== "All" && user.role !== userRoleFilter) return false;
+    if (userProviderFilter !== "All" && (user.provider || "password") !== userProviderFilter) return false;
+    if (userStatusFilter !== "All" && (user.status || "active") !== userStatusFilter) return false;
+    return true;
+  });
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-10">
       
       {/* Premium Command Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white dark:bg-[#0f172a] p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-800 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-600 to-red-600"></div>
         <div className="z-10 w-full md:w-auto">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-3 mb-2">
-              <Globe className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              <Globe className="h-8 w-8 text-red-600 dark:text-red-400" />
               <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Crisis Command Center</h1>
             </div>
           </div>
@@ -300,9 +345,9 @@ export default function AdminDashboard() {
 
       {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="border-none shadow-md bg-gradient-to-br from-blue-500 to-blue-700 text-white">
+        <Card className="border-none shadow-md bg-gradient-to-br from-stone-500 to-red-700 text-white">
           <CardContent className="p-6">
-            <p className="text-blue-100 font-bold text-sm uppercase tracking-wider mb-2">Active</p>
+            <p className="text-stone-100 font-bold text-sm uppercase tracking-wider mb-2">Active</p>
             <h3 className="text-4xl font-black">{activeCount}</h3>
           </CardContent>
         </Card>
@@ -319,7 +364,7 @@ export default function AdminDashboard() {
                 <p className="text-slate-500 font-bold text-sm uppercase tracking-wider mb-2">Readiness</p>
                 <h3 className={`text-3xl font-black ${readinessScore < 50 ? 'text-orange-500' : 'text-emerald-500'}`}>{readinessScore}%</h3>
               </div>
-              <div className="h-10 w-10 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+              <div className="h-10 w-10 bg-stone-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center">
                 <ShieldCheck className="h-5 w-5" />
               </div>
             </div>
@@ -332,7 +377,7 @@ export default function AdminDashboard() {
                 <p className="text-slate-500 font-bold text-sm uppercase tracking-wider mb-2">Responders</p>
                 <h3 className="text-3xl font-black text-slate-900 dark:text-white">{responders.length}</h3>
               </div>
-              <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+              <div className="h-10 w-10 bg-stone-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center">
                 <UserIcon className="h-5 w-5" />
               </div>
             </div>
@@ -352,6 +397,109 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="overflow-hidden rounded-2xl border-stone-200 shadow-sm dark:border-neutral-800">
+        <div className="flex flex-col gap-4 border-b border-stone-200 bg-stone-50 p-5 dark:border-neutral-800 dark:bg-neutral-900 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="flex items-center gap-2 text-xl font-black text-slate-950 dark:text-white">
+              <Users className="h-6 w-6 text-red-600" /> User Management & Access Control
+            </h2>
+            <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-400">Admin-only role governance, provider visibility, responder control, and account status.</p>
+          </div>
+          <Button variant="outline" className="font-bold" onClick={refreshUsers}>
+            <RefreshCcw className="mr-2 h-4 w-4" /> Refresh Users
+          </Button>
+        </div>
+
+        <CardContent className="space-y-5 p-5">
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="relative md:col-span-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Input className="pl-9" placeholder="Search name or email..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
+            </div>
+            <select className="app-select" value={userRoleFilter} onChange={(e) => setUserRoleFilter(e.target.value)}>
+              <option value="All">All roles</option>
+              <option value="guest">Guest</option>
+              <option value="staff">Staff</option>
+              <option value="responder">First Responder</option>
+              <option value="admin">Admin</option>
+            </select>
+            <select className="app-select" value={userProviderFilter} onChange={(e) => setUserProviderFilter(e.target.value)}>
+              <option value="All">All providers</option>
+              <option value="password">Password</option>
+              <option value="google">Google</option>
+            </select>
+            <select className="app-select" value={userStatusFilter} onChange={(e) => setUserStatusFilter(e.target.value)}>
+              <option value="All">All statuses</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-stone-200 dark:border-neutral-800">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead className="bg-stone-100 text-xs font-black uppercase tracking-widest text-slate-500 dark:bg-neutral-950 dark:text-slate-400">
+                <tr>
+                  <th className="px-4 py-3">User</th>
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Provider</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Created</th>
+                  <th className="px-4 py-3">Last Login</th>
+                  <th className="px-4 py-3 text-right">Access Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-200 dark:divide-neutral-800">
+                {filteredUsers.map(user => {
+                  const isProtectedAdmin = user.role === "admin" || isAdminAllowlisted(user.email);
+                  return (
+                    <tr key={user.uid} className="bg-white dark:bg-neutral-900">
+                      <td className="px-4 py-3">
+                        <p className="font-black text-slate-950 dark:text-white">{user.displayName || user.name || "Unnamed user"}</p>
+                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{user.email}</p>
+                      </td>
+                      <td className="px-4 py-3"><Badge variant={user.role === "admin" ? "destructive" : user.role === "responder" ? "warning" : "secondary"} className="capitalize">{user.role}</Badge></td>
+                      <td className="px-4 py-3 capitalize text-slate-700 dark:text-slate-200">{user.provider || "password"}</td>
+                      <td className="px-4 py-3 capitalize text-slate-700 dark:text-slate-200">{user.status || "active"}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "N/A"}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="outline" disabled={isProtectedAdmin || user.role === "responder"} onClick={() => updateUserAccess(user, { role: "responder", status: "active", activeResponder: true }, "User promoted to First Responder.")}>
+                            <UserCog className="mr-1 h-3 w-3" /> Promote
+                          </Button>
+                          <Button size="sm" variant="outline" disabled={isProtectedAdmin || user.role !== "responder"} onClick={() => updateUserAccess(user, { role: "staff", activeResponder: false }, "Responder role revoked to Staff.")}>
+                            Revoke
+                          </Button>
+                          <Button size="sm" variant="outline" disabled={isProtectedAdmin} onClick={() => updateUserAccess(user, { status: user.status === "suspended" ? "active" : "suspended" }, user.status === "suspended" ? "Account reactivated." : "Account suspended.")}>
+                            <Ban className="mr-1 h-3 w-3" /> {user.status === "suspended" ? "Activate" : "Suspend"}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl bg-stone-100 p-4 dark:bg-neutral-950">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-500">Current Responders</p>
+              <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">{responders.length}</p>
+            </div>
+            <div className="rounded-xl bg-stone-100 p-4 dark:bg-neutral-950">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-500">Google Admins</p>
+              <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">{allUsers.filter(user => user.role === "admin" && user.provider === "google").length}</p>
+            </div>
+            <div className="rounded-xl bg-stone-100 p-4 dark:bg-neutral-950">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-500">Suspended</p>
+              <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">{allUsers.filter(user => user.status === "suspended").length}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
@@ -388,7 +536,7 @@ export default function AdminDashboard() {
           <Card className="border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 dark:bg-slate-900">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col lg:flex-row justify-between items-center gap-4">
               <h2 className="text-xl font-black flex items-center gap-2 text-slate-900 dark:text-white">
-                <Activity className="h-6 w-6 text-indigo-600 dark:text-indigo-400" /> Active Operations Queue
+                <Activity className="h-6 w-6 text-red-600 dark:text-red-400" /> Active Operations Queue
               </h2>
 
               <div className="flex flex-wrap items-center gap-3">
@@ -454,8 +602,7 @@ export default function AdminDashboard() {
                       <tr key={incident.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                         <td className="p-4 px-6">
                           <p className="font-bold text-slate-900 dark:text-white">
-                            {/* @ts-ignore */}
-                            {incident.isSimulation && <Badge className="mr-2 text-[8px] px-1 bg-purple-500">DRILL</Badge>}
+                            {incident.isSimulation && <Badge className="mr-2 text-[8px] px-1 bg-stone-500">DRILL</Badge>}
                             {incident.incidentType}
                           </p>
                           <p className="text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" /> {incident.location}</p>
@@ -465,7 +612,7 @@ export default function AdminDashboard() {
                           <Badge variant={getSeverityBadge(incident.severity)} className="font-bold">{incident.severity}</Badge>
                         </td>
                         <td className="p-4">
-                          <Badge variant={incident.status === 'reported' ? 'outline' : 'info'} className="capitalize font-bold dark:bg-transparent dark:border-blue-500/50">
+                          <Badge variant={incident.status === 'reported' ? 'outline' : 'info'} className="capitalize font-bold dark:bg-transparent dark:border-stone-500/50">
                             {incident.status.replace('_', ' ')}
                           </Badge>
                         </td>
@@ -537,8 +684,7 @@ export default function AdminDashboard() {
                     <div key={inc.id} className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-orange-200 dark:border-orange-900/30 shadow-sm cursor-pointer hover:border-orange-400 transition-colors" onClick={() => setSelectedIncident(inc)}>
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-bold text-slate-900 dark:text-white text-sm">
-                          {/* @ts-ignore */}
-                          {inc.isSimulation && <Badge className="mr-2 text-[8px] px-1 bg-purple-500">DRILL</Badge>}
+                          {inc.isSimulation && <Badge className="mr-2 text-[8px] px-1 bg-stone-500">DRILL</Badge>}
                           {inc.incidentType}
                         </span>
                         <Badge variant="destructive" className="text-[10px] px-1.5 py-0 bg-orange-600">WATCH</Badge>
@@ -556,16 +702,16 @@ export default function AdminDashboard() {
           {/* Live Event Feed */}
           <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-              <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <Activity className="h-5 w-5 text-red-600 dark:text-red-400" />
               <h2 className="font-black text-slate-900 dark:text-white uppercase tracking-widest text-xs">Live Event Feed</h2>
             </div>
             <CardContent className="p-0">
               <div className="h-[400px] overflow-y-auto p-4 space-y-4">
                 {incidents.slice(0, 10).map(inc => (
-                  <div key={inc.id} className="flex gap-3 text-sm border-l-2 border-blue-200 dark:border-blue-900 pl-3">
+                  <div key={inc.id} className="flex gap-3 text-sm border-l-2 border-stone-200 dark:border-red-900 pl-3">
                     <div className="flex-1">
                       <p className="font-bold text-slate-900 dark:text-white">
-                        <span className="text-blue-600 dark:text-blue-400">[{inc.incidentType}]</span> {inc.status.replace('_', ' ')}
+                        <span className="text-red-600 dark:text-red-400">[{inc.incidentType}]</span> {inc.status.replace('_', ' ')}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{new Date(inc.updatedAt).toLocaleTimeString()} • {inc.location}</p>
                     </div>
@@ -581,7 +727,7 @@ export default function AdminDashboard() {
         isOpen={showBroadcastModal}
         onClose={() => setShowBroadcastModal(false)}
         title={
-          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black">
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-black">
             <Megaphone className="h-6 w-6" /> Mass Alert Broadcast
           </div>
         }
@@ -592,7 +738,7 @@ export default function AdminDashboard() {
           <div>
             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Alert Template</label>
             <select 
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3 text-sm font-medium focus:ring-2 focus:ring-stone-500 outline-none text-slate-900 dark:text-white"
               value={broadcastTemplate}
               onChange={(e) => setBroadcastTemplate(e.target.value)}
             >
@@ -607,7 +753,7 @@ export default function AdminDashboard() {
           <div>
             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Custom Message</label>
             <textarea 
-              className="flex w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 min-h-[120px] text-slate-900 dark:text-white"
+              className="flex w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 min-h-[120px] text-slate-900 dark:text-white"
               value={broadcastMessage}
               onChange={(e) => setBroadcastMessage(e.target.value)}
               placeholder="Provide specific instructions..."
@@ -616,7 +762,7 @@ export default function AdminDashboard() {
 
           <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button type="button" variant="ghost" className="font-bold dark:text-white dark:hover:bg-slate-800" onClick={() => setShowBroadcastModal(false)}>Cancel</Button>
-            <Button type="button" className="bg-indigo-600 hover:bg-indigo-700 font-bold px-8 h-12 text-white shadow-lg shadow-indigo-500/20" onClick={handleBroadcast}>
+            <Button type="button" className="bg-red-600 hover:bg-red-700 font-bold px-8 h-12 text-white shadow-lg shadow-stone-500/20" onClick={handleBroadcast}>
               Transmit Alert
             </Button>
           </div>
@@ -629,7 +775,7 @@ export default function AdminDashboard() {
         title={
           <div className="flex items-center gap-3 w-full justify-between pr-8">
             <div className="flex items-center gap-3">
-              <div className={`h-3 w-3 rounded-full ${selectedIncident?.severity === 'Critical' ? 'bg-red-500 animate-pulse' : 'bg-blue-500'}`}></div>
+              <div className={`h-3 w-3 rounded-full ${selectedIncident?.severity === 'Critical' ? 'bg-red-500 animate-pulse' : 'bg-stone-500'}`}></div>
               <span className="font-black text-xl dark:text-white">Command: {selectedIncident?.incidentType}</span>
             </div>
             <div className="flex gap-2">
@@ -663,7 +809,7 @@ export default function AdminDashboard() {
                 <div className="col-span-4 mt-2">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Initial Description</p>
                   <p className="text-sm bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium">
-                    "{selectedIncident.description}"
+                    &quot;{selectedIncident.description}&quot;
                   </p>
                 </div>
               </div>
@@ -675,12 +821,15 @@ export default function AdminDashboard() {
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-2 text-blue-400 font-black tracking-widest uppercase text-xs">
+                    <div className="flex items-center gap-2 text-red-300 font-black tracking-widest uppercase text-xs">
                       <Zap className="h-5 w-5" /> AI Crisis Copilot
                     </div>
-                    {/* @ts-ignore */}
+                    <div className="flex gap-2">
+                      <Badge className="bg-white/10 uppercase font-bold text-[10px] tracking-widest text-white border-white/20">{selectedIncident.aiUrgencyLabel || "Watch"}</Badge>
+                      <Badge className="bg-white/10 uppercase font-bold text-[10px] tracking-widest text-white border-white/20">{selectedIncident.aiConfidence || "Medium"} Confidence</Badge>
+                    </div>
                     {selectedIncident.isSimulation && (
-                      <Badge className="bg-purple-500 uppercase font-bold text-[10px] tracking-widest">Simulation Mode</Badge>
+                      <Badge className="bg-stone-500 uppercase font-bold text-[10px] tracking-widest">Simulation Mode</Badge>
                     )}
                   </div>
                   
@@ -701,9 +850,19 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <div className="bg-blue-500/10 p-4 rounded-2xl border border-blue-500/20 backdrop-blur-sm">
-                      <h4 className="text-blue-300 font-bold text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2"><Target className="h-3 w-3"/> Recommended Immediate Actions</h4>
-                      <p className="text-sm whitespace-pre-wrap font-medium text-blue-50">{selectedIncident.aiPlaybook}</p>
+                    <div className="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 backdrop-blur-sm">
+                      <h4 className="text-red-200 font-bold text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2"><Target className="h-3 w-3"/> Recommended Immediate Actions</h4>
+                      <p className="text-sm whitespace-pre-wrap font-medium text-red-50">{selectedIncident.aiImmediateActions || selectedIncident.aiPlaybook}</p>
+                    </div>
+
+                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+                      <h4 className="text-stone-300 font-bold text-[10px] uppercase tracking-widest mb-2">Operational Playbook</h4>
+                      <p className="text-sm whitespace-pre-wrap font-medium text-slate-100">{selectedIncident.aiPlaybook}</p>
+                    </div>
+
+                    <div className="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20 backdrop-blur-sm">
+                      <h4 className="text-emerald-300 font-bold text-[10px] uppercase tracking-widest mb-2">Preventive Recommendations</h4>
+                      <p className="text-sm whitespace-pre-wrap font-medium text-emerald-50">{selectedIncident.aiPreventiveRecommendations || "Inspect the area after resolution and document corrective action."}</p>
                     </div>
                   </div>
                 </div>
@@ -754,11 +913,11 @@ export default function AdminDashboard() {
               {selectedIncident.status !== 'resolved' && (
                 <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   <h4 className="font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2 uppercase tracking-wide text-xs">
-                    <Zap className="h-4 w-4 text-indigo-600" /> Dispatch Responder
+                    <Zap className="h-4 w-4 text-red-600" /> Dispatch Responder
                   </h4>
                   <div className="space-y-3">
                     <select 
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 text-sm font-medium focus:ring-2 focus:ring-stone-500 outline-none text-slate-900 dark:text-white"
                       id="responder-select"
                     >
                       <option value="" className="text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800">Select personnel...</option>
@@ -767,7 +926,7 @@ export default function AdminDashboard() {
                       ))}
                     </select>
                     <Button 
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-12 rounded-xl shadow-md"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white font-bold h-12 rounded-xl shadow-md"
                       onClick={() => {
                         const val = (document.getElementById("responder-select") as HTMLSelectElement).value;
                         if(val) assignResponder(selectedIncident.id, val);
@@ -782,11 +941,11 @@ export default function AdminDashboard() {
               {/* Status Controls */}
               <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h4 className="font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2 uppercase tracking-wide text-xs">
-                  <Activity className="h-4 w-4 text-blue-600 dark:text-blue-400" /> Override Status
+                  <Activity className="h-4 w-4 text-red-600 dark:text-red-400" /> Override Status
                 </h4>
                 <div className="space-y-3">
                   <select 
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 text-sm font-medium focus:ring-2 focus:ring-stone-500 outline-none text-slate-900 dark:text-white"
                     id="status-select"
                     defaultValue={selectedIncident.status}
                   >

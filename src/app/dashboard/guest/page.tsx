@@ -107,9 +107,9 @@ export default function GuestDashboard() {
   const getStatusBanner = (status: string) => {
     switch(status) {
       case 'reported': return <div className="bg-orange-100 text-orange-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><Clock className="h-4 w-4 animate-spin-slow" /> Your report is being reviewed.</div>;
-      case 'acknowledged': return <div className="bg-blue-100 text-blue-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><CheckCircle className="h-4 w-4" /> Staff has acknowledged. Help is organizing.</div>;
-      case 'assigned': return <div className="bg-indigo-100 text-indigo-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><UserCircle className="h-4 w-4" /> A responder has been assigned.</div>;
-      case 'en_route': return <div className="bg-purple-100 text-purple-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><Activity className="h-4 w-4 animate-pulse" /> Responder is En Route to your location.</div>;
+      case 'acknowledged': return <div className="bg-stone-100 text-red-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><CheckCircle className="h-4 w-4" /> Staff has acknowledged. Help is organizing.</div>;
+      case 'assigned': return <div className="bg-stone-100 text-red-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><UserCircle className="h-4 w-4" /> A responder has been assigned.</div>;
+      case 'en_route': return <div className="bg-stone-100 text-red-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><Activity className="h-4 w-4 animate-pulse" /> Responder is En Route to your location.</div>;
       case 'in_progress': return <div className="bg-yellow-100 text-yellow-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><Zap className="h-4 w-4 animate-pulse" /> Emergency is currently being handled.</div>;
       case 'resolved': return <div className="bg-green-100 text-green-800 p-3 rounded-lg flex items-center gap-2 font-bold text-sm"><CheckCircle className="h-4 w-4" /> Incident has been resolved. Stay safe.</div>;
       default: return null;
@@ -121,13 +121,13 @@ export default function GuestDashboard() {
       
       {/* Premium Hero Status Card */}
       <div className="relative overflow-hidden bg-[#0a1128] text-white p-8 md:p-10 rounded-3xl shadow-2xl border border-[#1a233a]">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">Emergency Assist</h1>
-            <p className="text-blue-200 font-medium text-lg">
+            <p className="text-stone-200 font-medium text-lg">
               {activeIncidents.length === 0 ? "No active emergencies reported by you." : `${activeIncidents.length} active incident(s) under response.`}
             </p>
           </div>
@@ -158,12 +158,12 @@ export default function GuestDashboard() {
           
           {/* Active Incident Spotlight */}
           {latestActive && (
-            <Card className="border-2 border-indigo-200 shadow-lg overflow-hidden">
-              <div className="bg-indigo-50 px-6 py-3 border-b border-indigo-100 flex justify-between items-center">
-                <span className="font-black text-indigo-900 uppercase tracking-widest text-xs flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-indigo-600 animate-pulse" /> Live Status
+            <Card className="border-2 border-stone-200 shadow-lg overflow-hidden">
+              <div className="bg-stone-50 px-6 py-3 border-b border-stone-100 flex justify-between items-center">
+                <span className="font-black text-red-900 uppercase tracking-widest text-xs flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-red-600 animate-pulse" /> Live Status
                 </span>
-                <span className="text-xs font-bold text-indigo-400">ID: {latestActive.id.slice(-6).toUpperCase()}</span>
+                <span className="text-xs font-bold text-red-400">ID: {latestActive.id.slice(-6).toUpperCase()}</span>
               </div>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
@@ -180,7 +180,7 @@ export default function GuestDashboard() {
                   <div className="mt-6 bg-gradient-to-br from-slate-900 to-[#0a1128] text-white p-5 rounded-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-10"><Zap className="h-16 w-16" /></div>
                     <div className="relative z-10">
-                      <h4 className="text-blue-400 font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <h4 className="text-red-400 font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
                         <Zap className="h-3 w-3" /> AI Safety Guidance
                       </h4>
                       <p className="font-medium leading-relaxed">{latestActive.aiSafetyGuidance}</p>
@@ -232,7 +232,7 @@ export default function GuestDashboard() {
                         </div>
                         <h3 className="font-black text-slate-900">{incident.incidentType}</h3>
                       </div>
-                      <Button variant="ghost" size="sm" className="font-bold text-blue-600">Details</Button>
+                      <Button variant="ghost" size="sm" className="font-bold text-red-600">Details</Button>
                     </div>
                   </Card>
                 ))}
@@ -257,7 +257,7 @@ export default function GuestDashboard() {
                   Call Security
                 </button>
                 <button onClick={handleShareLocation} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-100 transition-colors text-left font-bold text-slate-700 w-full group">
-                  <div className="h-10 w-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <div className="h-10 w-10 rounded-lg bg-stone-100 text-red-600 flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-colors">
                     <MapPin className="h-5 w-5" />
                   </div>
                   Share Location
@@ -278,20 +278,20 @@ export default function GuestDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 shadow-sm rounded-2xl bg-blue-50/50">
+          <Card className="border-slate-200 shadow-sm rounded-2xl bg-stone-50/50">
             <CardContent className="p-6">
-              <h3 className="font-black text-slate-900 mb-3 flex items-center gap-2"><Info className="h-5 w-5 text-blue-600" /> What Happens Next?</h3>
+              <h3 className="font-black text-slate-900 mb-3 flex items-center gap-2"><Info className="h-5 w-5 text-red-600" /> What Happens Next?</h3>
               <ul className="space-y-3 text-sm font-medium text-slate-600">
                 <li className="flex gap-2">
-                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-stone-500 shrink-0" />
                   Staff are instantly notified and AI analyzes the severity.
                 </li>
                 <li className="flex gap-2">
-                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-stone-500 shrink-0" />
                   A trained responder is assigned to your location.
                 </li>
                 <li className="flex gap-2">
-                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-stone-500 shrink-0" />
                   You will see live status updates right on this dashboard.
                 </li>
               </ul>
@@ -346,7 +346,7 @@ export default function GuestDashboard() {
           <div>
             <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Context & Details (Optional)</label>
             <textarea 
-              className="flex w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 min-h-[120px]"
+              className="flex w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 min-h-[120px]"
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe the situation..."
@@ -368,9 +368,9 @@ export default function GuestDashboard() {
             <h4 className="font-black text-orange-800 uppercase text-xs tracking-wider mb-1">Fire Protocol</h4>
             <p className="text-sm font-medium text-orange-900">Do not use elevators. Feel doors for heat before opening. Crawl low under smoke.</p>
           </div>
-          <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
-            <h4 className="font-black text-blue-800 uppercase text-xs tracking-wider mb-1">Medical Protocol</h4>
-            <p className="text-sm font-medium text-blue-900">Call 100 immediately if life-threatening. Do not move injured persons unless in immediate danger.</p>
+          <div className="bg-stone-50 border border-stone-100 p-4 rounded-xl">
+            <h4 className="font-black text-red-800 uppercase text-xs tracking-wider mb-1">Medical Protocol</h4>
+            <p className="text-sm font-medium text-red-900">Call 100 immediately if life-threatening. Do not move injured persons unless in immediate danger.</p>
           </div>
           <div className="bg-slate-100 border border-slate-200 p-4 rounded-xl">
             <h4 className="font-black text-slate-800 uppercase text-xs tracking-wider mb-1">Evacuation Protocol</h4>
@@ -401,7 +401,7 @@ export default function GuestDashboard() {
               <div className="bg-[#0a1128] text-white p-5 rounded-2xl relative overflow-hidden shadow-md">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Zap className="h-16 w-16" /></div>
                 <div className="relative z-10">
-                  <h4 className="text-blue-400 font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <h4 className="text-red-400 font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Zap className="h-3 w-3" /> AI Analysis Log
                   </h4>
                   <p className="text-sm font-medium leading-relaxed">{selectedIncident.aiSafetyGuidance}</p>

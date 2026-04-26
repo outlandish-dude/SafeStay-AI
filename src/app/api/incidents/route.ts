@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { analyzeIncident } from "@/lib/gemini";
 import { db } from "@/lib/firebase/config";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
 export const dynamic = 'force-dynamic';
@@ -9,18 +9,23 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { reporterId, reporterName, reporterRole, incidentType, location, description } = body;
+    const { reporterId, reporterName, incidentType, location, description } = body;
 
     if (!reporterId || !incidentType || !location || !description) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    const reporterSnap = await getDoc(doc(db, "users", reporterId));
+    const reporter = reporterSnap.exists() ? reporterSnap.data() : null;
+    const verifiedRole = reporter?.role || "guest";
+    const verifiedName = reporter?.name || reporter?.displayName || reporterName || "Anonymous";
 
     // Call Gemini
     const aiAnalysis = await analyzeIncident({
       incidentType,
       description,
       location,
-      reporterRole: reporterRole || "guest"
+      reporterRole: verifiedRole
     });
 
     const incidentId = uuidv4();
@@ -29,8 +34,8 @@ export async function POST(request: Request) {
     const newIncident = {
       id: incidentId,
       reporterId,
-      reporterName: reporterName || "Anonymous",
-      reporterRole: reporterRole || "guest",
+      reporterName: verifiedName,
+      reporterRole: verifiedRole,
       incidentType,
       location,
       description,
@@ -38,8 +43,12 @@ export async function POST(request: Request) {
       aiSummary: aiAnalysis.summary,
       aiPlaybook: aiAnalysis.playbook,
       aiSafetyGuidance: aiAnalysis.safetyGuidance,
+      aiImmediateActions: aiAnalysis.immediateActions,
       aiEscalationRisk: aiAnalysis.escalationRisk,
       aiSuggestedTeam: aiAnalysis.suggestedTeam,
+      aiUrgencyLabel: aiAnalysis.urgencyLabel,
+      aiConfidence: aiAnalysis.confidence,
+      aiPreventiveRecommendations: aiAnalysis.preventiveRecommendations,
       status: "reported",
       assignedTo: [],
       createdAt: now,
@@ -49,7 +58,7 @@ export async function POST(request: Request) {
           type: "status_change",
           message: "Incident reported",
           actorId: reporterId,
-          actorName: reporterName || "Anonymous",
+          actorName: verifiedName,
           timestamp: now
         }
       ]

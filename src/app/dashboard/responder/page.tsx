@@ -77,7 +77,7 @@ export default function ResponderDashboard() {
 
   if (loading) return (
     <div className="flex h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
     </div>
   );
 
@@ -90,11 +90,11 @@ export default function ResponderDashboard() {
     <div className="space-y-8 max-w-5xl mx-auto pb-10">
       
       <div className="bg-[#0a1128] text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black mb-1 flex items-center gap-3 tracking-tight">
-              <Zap className="h-8 w-8 text-indigo-400" /> Field Response Console
+              <Zap className="h-8 w-8 text-red-400" /> Field Response Console
             </h1>
             <p className="text-slate-400 font-medium">Tactical mission tracking and emergency response.</p>
           </div>
@@ -111,9 +111,9 @@ export default function ResponderDashboard() {
             <h3 className="text-3xl font-black">{assignedIncidents.length}</h3>
           </CardContent>
         </Card>
-        <Card className="border-none bg-indigo-600 text-white shadow-md">
+        <Card className="border-none bg-red-600 text-white shadow-md">
           <CardContent className="p-5">
-            <p className="text-indigo-200 font-black text-[10px] uppercase tracking-widest mb-1">En Route</p>
+            <p className="text-stone-200 font-black text-[10px] uppercase tracking-widest mb-1">En Route</p>
             <h3 className="text-3xl font-black">{enRouteCount}</h3>
           </CardContent>
         </Card>
@@ -141,7 +141,7 @@ export default function ResponderDashboard() {
         <div className="space-y-6">
           {assignedIncidents.map(incident => (
             <Card key={incident.id} className="overflow-hidden border-slate-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
-              <div className={`h-2 w-full ${incident.severity === 'Critical' ? 'bg-red-600' : 'bg-indigo-600'}`} />
+              <div className={`h-2 w-full ${incident.severity === 'Critical' ? 'bg-red-600' : 'bg-red-600'}`} />
               <div className="flex flex-col md:flex-row">
                 
                 {/* Left Side: Mission Details */}
@@ -159,12 +159,12 @@ export default function ResponderDashboard() {
                   </div>
                   
                   <div className="flex items-center gap-2 text-slate-700 mb-6 bg-slate-50 p-4 rounded-xl font-bold border border-slate-100">
-                    <MapPin className="h-5 w-5 text-indigo-500 shrink-0" />
+                    <MapPin className="h-5 w-5 text-stone-500 shrink-0" />
                     Target: {incident.location}
                   </div>
 
                   <div className="mb-4 bg-slate-900 text-white p-5 rounded-xl">
-                    <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <h4 className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                       <Target className="h-4 w-4" /> Tactical Playbook
                     </h4>
                     <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">
@@ -180,7 +180,7 @@ export default function ResponderDashboard() {
                     
                     {incident.status === 'assigned' || incident.status === 'acknowledged' ? (
                       <Button 
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-md font-black shadow-md"
+                        className="w-full bg-red-600 hover:bg-red-700 h-12 text-md font-black shadow-md"
                         onClick={() => updateStatus(incident.id, 'en_route', 'Responder acknowledged and is En Route.')}
                       >
                         Accept & En Route
@@ -219,7 +219,7 @@ export default function ResponderDashboard() {
       <Modal
         isOpen={!!selectedIncident}
         onClose={() => setSelectedIncident(null)}
-        title={<span className="font-black flex items-center gap-2"><Activity className="h-5 w-5 text-indigo-600"/> Mission Log & Comms</span>}
+        title={<span className="font-black flex items-center gap-2"><Activity className="h-5 w-5 text-red-600"/> Mission Log & Comms</span>}
         className="max-w-2xl"
       >
         {selectedIncident && (
@@ -235,7 +235,7 @@ export default function ResponderDashboard() {
                   onChange={(e) => setProgressNote(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addProgressUpdate(selectedIncident.id)}
                 />
-                <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold" onClick={() => addProgressUpdate(selectedIncident.id)}>
+                <Button className="bg-red-600 hover:bg-red-700 font-bold" onClick={() => addProgressUpdate(selectedIncident.id)}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
@@ -246,7 +246,7 @@ export default function ResponderDashboard() {
               <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                 {(selectedIncident.timelineEvents || []).slice().reverse().map((event, idx) => (
                   <div key={idx} className="relative flex items-start justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-indigo-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" />
+                    <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-stone-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" />
                     <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm ml-2 md:ml-0">
                       <p className="font-bold text-slate-900 text-sm">{event.message}</p>
                       <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">
