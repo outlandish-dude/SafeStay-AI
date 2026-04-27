@@ -131,5 +131,4 @@ For local testing, you can create:
 
 Built for **Solution Challenge 2026 India** using Google technologies to improve emergency response coordination in hospitality environments.
 
-```
-```
+
