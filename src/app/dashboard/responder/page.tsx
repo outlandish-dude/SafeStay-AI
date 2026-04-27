@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { MapPin, CheckCircle, Zap, Target, Activity, Send } from "lucide-react";
+import { MapPin, CheckCircle, Zap, Target, Activity, Send, BookOpen, History } from "lucide-react";
 import { Incident } from "@/types";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -76,12 +76,16 @@ export default function ResponderDashboard() {
   };
 
   if (loading) return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+    <div className="flex h-screen items-center justify-center bg-stone-100 dark:bg-neutral-950">
+      <div className="w-full max-w-lg space-y-3 p-6">
+        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Loading assignment queue...</p>
+        {[1,2,3].map(i => <div key={i} className="h-20 rounded-2xl border border-stone-200 bg-gradient-to-r from-stone-100 via-white to-stone-100 animate-pulse dark:border-neutral-800 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900" />)}
+      </div>
     </div>
   );
 
   const assignedIncidents = incidents.filter(i => i.status !== "resolved");
+  const resolvedIncidents = incidents.filter(i => i.status === "resolved");
   const enRouteCount = assignedIncidents.filter(i => i.status === 'en_route').length;
   const inProgressCount = assignedIncidents.filter(i => i.status === 'in_progress').length;
   const resolvedToday = incidents.filter(i => i.status === "resolved" && (Date.now() - i.resolvedAt!) < 86400000).length;
@@ -89,7 +93,7 @@ export default function ResponderDashboard() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-10">
       
-      <div className="bg-[#0a1128] text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+      <div id="responder-overview" className="scroll-mt-24 bg-[#0a1128] text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -131,11 +135,12 @@ export default function ResponderDashboard() {
         </Card>
       </div>
 
+      <section id="assigned-missions" className="scroll-mt-24">
       {assignedIncidents.length === 0 ? (
-        <Card className="bg-slate-50 border-dashed text-center py-16 rounded-3xl">
-          <CheckCircle className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-black text-slate-700">All Clear</h3>
-          <p className="text-slate-500 font-medium">No active tactical assignments.</p>
+        <Card className="bg-slate-50 border-dashed text-center py-16 rounded-3xl dark:bg-neutral-900 dark:border-neutral-800">
+          <CheckCircle className="h-16 w-16 text-emerald-300 mx-auto mb-4" />
+          <h3 className="text-xl font-black text-slate-700 dark:text-slate-100">No assignments currently pending.</h3>
+          <p className="text-slate-500 font-medium dark:text-slate-400">Assigned incidents and response actions will appear here.</p>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -215,6 +220,64 @@ export default function ResponderDashboard() {
           ))}
         </div>
       )}
+      </section>
+
+      <section id="ai-playbooks" className="scroll-mt-24 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-100 text-red-600 dark:bg-white/10 dark:text-red-400">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">AI Playbooks</h2>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Fast response guidance for common field scenarios.</p>
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            ["Fire Alert", "Evacuate the zone, avoid elevators, isolate the area, and report smoke or heat conditions."],
+            ["Medical Emergency", "Assess responsiveness, call 112 for life-threatening cases, keep pathways clear, and update operations."],
+            ["Security Threat", "Keep distance, avoid confrontation, preserve scene details, and wait for coordinated support."],
+          ].map(([title, copy]) => (
+            <div key={title} className="rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
+              <h3 className="font-black text-slate-900 dark:text-white">{title}</h3>
+              <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">{copy}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="mission-history" className="scroll-mt-24 space-y-4">
+        <div className="flex items-center gap-3">
+          <History className="h-5 w-5 text-slate-500" />
+          <div>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">Mission History</h2>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Completed assignments for this responder unit.</p>
+          </div>
+        </div>
+        {resolvedIncidents.length === 0 ? (
+          <Card className="border-dashed border-stone-300 bg-white/80 py-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <CheckCircle className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
+            <h3 className="font-black text-slate-800 dark:text-slate-100">No completed missions yet.</h3>
+            <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Resolved assignments will appear here after closure.</p>
+          </Card>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {resolvedIncidents.slice(0, 6).map(incident => (
+              <Card key={incident.id} className="border-stone-200 shadow-sm dark:border-neutral-800">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-black text-slate-900 dark:text-white">{incident.incidentType}</h3>
+                      <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{incident.location}</p>
+                    </div>
+                    <Badge variant="success" className="font-bold">Resolved</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
 
       <Modal
         isOpen={!!selectedIncident}

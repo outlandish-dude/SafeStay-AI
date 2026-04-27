@@ -78,6 +78,7 @@ export default function StaffDashboard() {
   };
 
   const activeIncidents = incidents.filter(i => i.status !== "resolved");
+  const resolvedIncidents = incidents.filter(i => i.status === "resolved");
   const awaitingAck = activeIncidents.filter(i => i.status === 'reported').length;
   const criticalAlerts = activeIncidents.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
 
@@ -97,7 +98,7 @@ export default function StaffDashboard() {
     <div className="space-y-8 max-w-6xl mx-auto pb-10">
       
       {/* Premium Header */}
-      <div className="bg-[#0a1128] text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+      <div id="staff-overview" className="scroll-mt-24 bg-[#0a1128] text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -143,7 +144,7 @@ export default function StaffDashboard() {
         </Card>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div id="live-incidents" className="scroll-mt-24 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="h-4 w-4 absolute left-3 top-3.5 text-slate-400" />
           <Input 
@@ -170,8 +171,11 @@ export default function StaffDashboard() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-64 bg-slate-200 animate-pulse rounded-2xl" />)}
+        <div>
+          <p className="mb-3 text-sm font-bold text-slate-500 dark:text-slate-400">Loading incident feed...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1,2,3,4].map(i => <div key={i} className="h-64 rounded-2xl border border-stone-200 bg-gradient-to-r from-stone-100 via-white to-stone-100 animate-pulse dark:border-neutral-800 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900" />)}
+          </div>
         </div>
       ) : error ? (
         <Card className="bg-red-50 border-red-200 rounded-3xl">
@@ -182,10 +186,10 @@ export default function StaffDashboard() {
           </CardContent>
         </Card>
       ) : activeIncidents.length === 0 ? (
-        <Card className="bg-white border-slate-200 shadow-sm text-center py-20 rounded-3xl">
-          <CheckCircle className="h-16 w-16 text-slate-200 mx-auto mb-4" />
-          <h3 className="text-xl font-black text-slate-700">Operations Stable</h3>
-          <p className="text-slate-500 font-medium mt-1">No active emergencies currently reported in the venue.</p>
+        <Card className="bg-white border-slate-200 shadow-sm text-center py-20 rounded-3xl dark:bg-neutral-900 dark:border-neutral-800">
+          <CheckCircle className="h-16 w-16 text-emerald-300 mx-auto mb-4" />
+          <h3 className="text-xl font-black text-slate-700 dark:text-slate-100">No active incidents at the moment.</h3>
+          <p className="text-slate-500 font-medium mt-1 dark:text-slate-400">The live incident feed will populate as new reports arrive.</p>
         </Card>
       ) : filteredIncidents.length === 0 ? (
         <Card className="bg-white border-slate-200 text-center py-16 rounded-3xl">
@@ -232,6 +236,39 @@ export default function StaffDashboard() {
           ))}
         </div>
       )}
+
+      <section id="incident-history" className="scroll-mt-24 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">Incident History</h2>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Resolved reports and completed operational reviews.</p>
+          </div>
+          <Badge variant="secondary" className="font-bold">{resolvedIncidents.length} resolved</Badge>
+        </div>
+        {resolvedIncidents.length === 0 ? (
+          <Card className="border-dashed border-stone-300 bg-white/80 py-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <CheckCircle className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
+            <h3 className="font-black text-slate-800 dark:text-slate-100">No resolved incident history yet.</h3>
+            <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Completed incident records will appear here for review.</p>
+          </Card>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {resolvedIncidents.slice(0, 6).map(incident => (
+              <Card key={incident.id} className="cursor-pointer border-stone-200 shadow-sm transition hover:shadow-md dark:border-neutral-800" onClick={() => setSelectedIncident(incident)}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-black text-slate-900 dark:text-white">{incident.incidentType}</h3>
+                      <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{incident.location}</p>
+                    </div>
+                    <Badge variant="success" className="font-bold">Resolved</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
 
       <Modal
         isOpen={!!selectedIncident}

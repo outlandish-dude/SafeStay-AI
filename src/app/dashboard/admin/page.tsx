@@ -243,13 +243,13 @@ export default function AdminDashboard() {
     }
   };
 
-  const runMockDrill = async () => {
-    if(!confirm("Initiate Simulation Mode? This will inject a mock fire incident.")) return;
+  const runDrill = async () => {
+    if(!confirm("Initiate Drill Mode? This will inject a controlled training fire incident.")) return;
     try {
       await addDoc(collection(db, "incidents"), {
-        incidentType: "[SIMULATION] Fire Alert",
-        location: "Mock Block A",
-        description: "SIMULATION DRILL: Fire detected in Block A.",
+        incidentType: "[DRILL] Fire Alert",
+        location: "Training Block A",
+        description: "DRILL MODE: Fire alert scenario in Block A.",
         severity: "High",
         status: "reported",
         reporterId: userData?.uid,
@@ -259,18 +259,18 @@ export default function AdminDashboard() {
         updatedAt: Date.now(),
         timelineEvents: [{
           type: "created",
-          message: "Simulation Drill Initiated",
+          message: "Controlled Drill Initiated",
           actorId: userData?.uid,
           actorName: userData?.name,
           timestamp: Date.now()
         }],
         isSimulation: true,
-        aiSummary: "[SIMULATION] Controlled test of fire response protocol.",
-        aiEscalationRisk: "High - Simulation",
-        aiSuggestedTeam: "Fire Response Team",
-        aiPlaybook: "1. Evacuate Mock Block A.\n2. Dispatch responders.\n3. Await simulated all-clear."
+        aiSummary: "[DRILL] Controlled fire response training scenario.",
+        aiEscalationRisk: "High - Training scenario",
+        aiSuggestedTeam: "responder - Fire Response Team",
+        aiPlaybook: "1. Evacuate Training Block A.\n2. Dispatch responders.\n3. Await drill all-clear."
       });
-      toast.success("Simulation drill injected successfully.");
+      toast.success("Drill incident created successfully.");
     } catch (error) {
       console.error(error);
       toast.error("Failed to run drill");
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
     <div className="space-y-8 max-w-7xl mx-auto pb-10">
       
       {/* Premium Command Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white dark:bg-[#0f172a] p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-800 relative overflow-hidden">
+      <div id="command-center" className="scroll-mt-24 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white dark:bg-[#0f172a] p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-800 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-red-600 to-red-600"></div>
         <div className="z-10 w-full md:w-auto">
           <div className="flex items-center justify-between w-full">
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
           <Button variant="outline" className="shadow-sm border-slate-300 dark:border-slate-700 font-bold dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700" onClick={() => setShowBroadcastModal(true)}>
             <Megaphone className="h-4 w-4 mr-2" /> Mass Alert
           </Button>
-          <Button variant="outline" className="shadow-sm border-slate-300 dark:border-slate-700 font-bold dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700" onClick={runMockDrill}>
+          <Button variant="outline" className="shadow-sm border-slate-300 dark:border-slate-700 font-bold dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700" onClick={runDrill}>
             <PlayCircle className="h-4 w-4 mr-2" /> Run Drill
           </Button>
           <Button variant="outline" className="shadow-sm border-slate-300 dark:border-slate-700 font-bold dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700" onClick={exportCSV}>
@@ -398,7 +398,7 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <Card className="overflow-hidden rounded-2xl border-stone-200 shadow-sm dark:border-neutral-800">
+      <Card id="user-management" className="scroll-mt-24 overflow-hidden rounded-2xl border-stone-200 shadow-sm dark:border-neutral-800">
         <div className="flex flex-col gap-4 border-b border-stone-200 bg-stone-50 p-5 dark:border-neutral-800 dark:bg-neutral-900 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-black text-slate-950 dark:text-white">
@@ -501,6 +501,40 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
+      <section id="responder-control" className="scroll-mt-24 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="flex items-center gap-2 text-xl font-black text-slate-950 dark:text-white">
+              <UserCog className="h-6 w-6 text-red-600" /> Responder Control
+            </h2>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Current responder roster, availability posture, and active assignment visibility.</p>
+          </div>
+          <Badge variant="warning" className="w-fit font-bold">{responders.length} active responders</Badge>
+        </div>
+        {responders.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center dark:border-neutral-800 dark:bg-neutral-950">
+            <p className="font-black text-slate-800 dark:text-slate-100">No responders are currently assigned.</p>
+            <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Promote trusted users from User Management to build the responder roster.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-3">
+            {responders.map(responder => {
+              const assignedCount = incidents.filter(incident => incident.assignedTo?.includes(responder.uid) && incident.status !== "resolved").length;
+              return (
+                <div key={responder.uid} className="rounded-xl border border-stone-200 bg-stone-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
+                  <p className="font-black text-slate-950 dark:text-white">{responder.name || responder.email}</p>
+                  <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{responder.email}</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <Badge variant="secondary" className="font-bold">Responder</Badge>
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-500">{assignedCount} active</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         {/* Main Command Center (Left 2 Columns) */}
@@ -532,8 +566,22 @@ export default function AdminDashboard() {
             </Card>
           )}
 
+          {!topCriticalIncident && (
+            <Card className="border-stone-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+              <CardContent className="flex items-center gap-4 p-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">
+                  <CheckCircle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-950 dark:text-white">No critical incidents currently active.</h2>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">SafePulse and escalation watchlists remain active in the command center.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Main Table Section */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 dark:bg-slate-900">
+          <Card id="operations-queue" className="scroll-mt-24 border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 dark:bg-slate-900">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col lg:flex-row justify-between items-center gap-4">
               <h2 className="text-xl font-black flex items-center gap-2 text-slate-900 dark:text-white">
                 <Activity className="h-6 w-6 text-red-600 dark:text-red-400" /> Active Operations Queue
@@ -643,7 +691,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Right Sidebar: Watchlist, Hotspots & Live Feed */}
-        <div className="space-y-6">
+        <div id="analytics-insights" className="scroll-mt-24 space-y-6">
           
           {/* Hotspot Intelligence */}
           {hotspots.length > 0 && (
@@ -829,7 +877,7 @@ export default function AdminDashboard() {
                       <Badge className="bg-white/10 uppercase font-bold text-[10px] tracking-widest text-white border-white/20">{selectedIncident.aiConfidence || "Medium"} Confidence</Badge>
                     </div>
                     {selectedIncident.isSimulation && (
-                      <Badge className="bg-stone-500 uppercase font-bold text-[10px] tracking-widest">Simulation Mode</Badge>
+                      <Badge className="bg-stone-500 uppercase font-bold text-[10px] tracking-widest">Drill Mode</Badge>
                     )}
                   </div>
                   

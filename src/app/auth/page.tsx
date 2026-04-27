@@ -109,22 +109,17 @@ export default function AuthPage() {
     }
   };
 
-  const seedDemoAction = async () => {
-    setEmail("admin@safestay.com");
-    setPassword("password123");
-    setIsLogin(true);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4 text-slate-950 dark:bg-neutral-950 dark:text-slate-50">
-      <Card className="w-full max-w-md border-stone-200 bg-white/95 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
-        <CardHeader className="text-center pb-2">
+      <div className="w-full max-w-md space-y-4">
+      <Card className="border-stone-200 bg-white/95 shadow-xl shadow-stone-300/40 dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-black/40">
+        <CardHeader className="text-center pb-3 pt-7">
           <div className="flex justify-center mb-4">
             <div className="h-12 w-12 bg-slate-950 text-white rounded-lg flex items-center justify-center dark:bg-white dark:text-neutral-950">
               <ShieldCheck className="h-6 w-6" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-950 dark:text-white">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
+          <CardTitle className="text-2xl font-black text-slate-950 dark:text-white">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
           <CardDescription className="dark:text-slate-400">
             {isLogin ? "Sign in to access your dashboard" : "Public signup creates a guest or staff account"}
           </CardDescription>
@@ -141,7 +136,7 @@ export default function AuthPage() {
             {!isLogin && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Full Name</label>
-                <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" />
+                <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
               </div>
             )}
 
@@ -166,17 +161,10 @@ export default function AuthPage() {
               </div>
             )}
 
-            {isLogin && (
-              <div className="text-sm text-right">
-                <button type="button" onClick={seedDemoAction} className="text-slate-700 hover:underline dark:text-slate-300">
-                  Use Demo Admin Account
-                </button>
-              </div>
-            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full bg-slate-950 hover:bg-slate-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-stone-200" disabled={loading}>
-              {loading ? "Processing..." : isLogin ? "Sign In" : "Sign Up"}
+              {loading ? "Securing session..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
             <Button type="button" variant="outline" className="w-full border-stone-300 bg-white font-bold text-slate-950 hover:bg-stone-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800" disabled={loading} onClick={handleGoogleSignIn}>
               Continue with Google
@@ -194,9 +182,16 @@ export default function AuthPage() {
                 {isLogin ? "Sign Up" : "Sign In"}
               </button>
             </div>
+            <p className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-center text-xs font-medium leading-relaxed text-slate-600 dark:border-neutral-800 dark:bg-neutral-950 dark:text-slate-300">
+              Note: Public users can sign in only as Guest or Staff. Admin and First Responder access are restricted and managed internally.
+            </p>
           </CardFooter>
         </form>
       </Card>
+      <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-500">
+        AI-powered emergency response platform for hospitality operations.
+      </p>
+      </div>
     </div>
   );
 }

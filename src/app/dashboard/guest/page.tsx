@@ -84,7 +84,7 @@ export default function GuestDashboard() {
       toast.success("Silent SOS Activated. Security is on the way.");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to submit SOS. Call 100 immediately.");
+      toast.error("Failed to submit SOS. If the situation is life-threatening, call 112 immediately.");
     } finally {
       setSubmitting(false);
     }
@@ -120,12 +120,12 @@ export default function GuestDashboard() {
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       
       {/* Premium Hero Status Card */}
-      <div className="relative overflow-hidden bg-[#0a1128] text-white p-8 md:p-10 rounded-3xl shadow-2xl border border-[#1a233a]">
+      <div id="emergency-assist" className="scroll-mt-24 relative overflow-hidden bg-[#0a1128] text-white p-8 md:p-10 rounded-3xl shadow-2xl border border-[#1a233a]">
         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
+          <div id="recent-reports" className="scroll-mt-24">
             <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">Emergency Assist</h1>
             <p className="text-stone-200 font-medium text-lg">
               {activeIncidents.length === 0 ? "No active emergencies reported by you." : `${activeIncidents.length} active incident(s) under response.`}
@@ -215,8 +215,8 @@ export default function GuestDashboard() {
             ) : incidents.length === 0 ? (
               <Card className="bg-white border-slate-200 shadow-sm text-center py-12 rounded-2xl">
                 <ShieldCheck className="h-16 w-16 text-slate-200 mx-auto mb-4" />
-                <h3 className="text-lg font-black text-slate-700">All Clear</h3>
-                <p className="text-slate-500 font-medium">You have no incident history.</p>
+          <h3 className="text-lg font-black text-slate-700 dark:text-slate-200">No recent incidents reported.</h3>
+          <p className="text-slate-500 font-medium dark:text-slate-400">Emergency reporting and live status tracking will appear here when needed.</p>
               </Card>
             ) : (
               <div className="space-y-4">
@@ -244,7 +244,7 @@ export default function GuestDashboard() {
         {/* Right Sidebar Column */}
         <div className="space-y-6">
           
-          <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+          <Card id="quick-contacts" className="scroll-mt-24 border-slate-200 shadow-sm rounded-2xl overflow-hidden">
             <div className="bg-slate-50 px-5 py-4 border-b border-slate-100">
               <h2 className="font-black text-slate-900 uppercase tracking-wide text-sm">Quick Actions</h2>
             </div>
@@ -278,9 +278,9 @@ export default function GuestDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 shadow-sm rounded-2xl bg-stone-50/50">
+          <Card id="safety-handbook" className="scroll-mt-24 border-slate-200 shadow-sm rounded-2xl bg-stone-50/50">
             <CardContent className="p-6">
-              <h3 className="font-black text-slate-900 mb-3 flex items-center gap-2"><Info className="h-5 w-5 text-red-600" /> What Happens Next?</h3>
+              <h3 className="font-black text-slate-900 mb-3 flex items-center gap-2"><Info className="h-5 w-5 text-red-600" /> Safety Handbook</h3>
               <ul className="space-y-3 text-sm font-medium text-slate-600">
                 <li className="flex gap-2">
                   <div className="mt-1 h-1.5 w-1.5 rounded-full bg-stone-500 shrink-0" />
@@ -293,6 +293,10 @@ export default function GuestDashboard() {
                 <li className="flex gap-2">
                   <div className="mt-1 h-1.5 w-1.5 rounded-full bg-stone-500 shrink-0" />
                   You will see live status updates right on this dashboard.
+                </li>
+                <li className="flex gap-2">
+                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
+                  If the situation is life-threatening, call 112 immediately.
                 </li>
               </ul>
             </CardContent>
@@ -370,7 +374,7 @@ export default function GuestDashboard() {
           </div>
           <div className="bg-stone-50 border border-stone-100 p-4 rounded-xl">
             <h4 className="font-black text-red-800 uppercase text-xs tracking-wider mb-1">Medical Protocol</h4>
-            <p className="text-sm font-medium text-red-900">Call 100 immediately if life-threatening. Do not move injured persons unless in immediate danger.</p>
+            <p className="text-sm font-medium text-red-900">If the situation is life-threatening, call 112 immediately. Do not move injured persons unless they are in immediate danger.</p>
           </div>
           <div className="bg-slate-100 border border-slate-200 p-4 rounded-xl">
             <h4 className="font-black text-slate-800 uppercase text-xs tracking-wider mb-1">Evacuation Protocol</h4>

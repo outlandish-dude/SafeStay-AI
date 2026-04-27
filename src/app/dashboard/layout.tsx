@@ -3,8 +3,8 @@
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
-import { ShieldCheck, LogOut, UserCircle, Activity, Globe, Zap, Radio, ShieldX } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ShieldCheck, LogOut, UserCircle, Activity, Globe, Zap, ShieldX, BookOpen, Clock, ListChecks, Users, BarChart3, Siren, ClipboardList, History, UserCog, HeartHandshake, PhoneCall } from "lucide-react";
 import { auth } from "@/lib/firebase/config";
 import { signOut } from "firebase/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -20,12 +20,57 @@ export default function DashboardLayout({
   const { currentUser, userData, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [activeSection, setActiveSection] = useState("");
 
   useEffect(() => {
     if (!loading && !currentUser) {
       router.push("/auth");
     }
   }, [currentUser, loading, router]);
+
+  const navItems = useMemo(() => {
+    switch (userData?.role) {
+      case "admin":
+        return [
+          { id: "command-center", label: "Crisis Command Center", icon: Globe },
+          { id: "operations-queue", label: "Operations Queue", icon: ListChecks },
+          { id: "user-management", label: "User Management", icon: Users },
+          { id: "responder-control", label: "Responder Control", icon: UserCog },
+          { id: "analytics-insights", label: "Analytics & Insights", icon: BarChart3 },
+        ];
+      case "staff":
+        return [
+          { id: "staff-overview", label: "Venue Operations Console", icon: Activity },
+          { id: "live-incidents", label: "Live Incidents", icon: Siren },
+          { id: "incident-history", label: "Incident History", icon: History },
+        ];
+      case "responder":
+        return [
+          { id: "responder-overview", label: "Field Response Console", icon: Zap },
+          { id: "assigned-missions", label: "Assigned Missions", icon: ClipboardList },
+          { id: "mission-history", label: "Mission History", icon: History },
+          { id: "ai-playbooks", label: "AI Playbooks", icon: BookOpen },
+        ];
+      case "guest":
+      default:
+        return [
+          { id: "emergency-assist", label: "Emergency Assist", icon: HeartHandshake },
+          { id: "recent-reports", label: "Recent Reports", icon: Clock },
+          { id: "safety-handbook", label: "Safety Handbook", icon: BookOpen },
+          { id: "quick-contacts", label: "Quick Contacts", icon: PhoneCall },
+        ];
+    }
+  }, [userData?.role]);
+
+  useEffect(() => {
+    setActiveSection(navItems[0]?.id || "");
+  }, [navItems]);
+
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const section = document.getElementById(sectionId);
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   if (loading) {
     return (
@@ -51,26 +96,6 @@ export default function DashboardLayout({
       </div>
     );
   }
-
-  const getRoleTitle = (role: string | undefined) => {
-    switch(role) {
-      case 'admin': return "Crisis Command Center";
-      case 'staff': return "Venue Operations Console";
-      case 'responder': return "Field Response Console";
-      case 'guest': return "Emergency Assist";
-      default: return "Dashboard";
-    }
-  };
-
-  const getRoleIcon = (role: string | undefined) => {
-    switch(role) {
-      case 'admin': return <Globe className="h-5 w-5" />;
-      case 'staff': return <Activity className="h-5 w-5" />;
-      case 'responder': return <Zap className="h-5 w-5" />;
-      case 'guest': return <ShieldCheck className="h-5 w-5" />;
-      default: return <Radio className="h-5 w-5" />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col md:flex-row font-sans selection:bg-red-600 selection:text-white dark:bg-neutral-950">
@@ -99,11 +124,29 @@ export default function DashboardLayout({
             </div>
           </div>
           
-          <nav className="space-y-3">
-            <div className="px-4 py-3 bg-stone-100 text-slate-900 rounded-xl font-bold border-l-4 border-red-600 flex items-center gap-3 shadow-inner dark:bg-white/5 dark:text-white">
-              {getRoleIcon(userData?.role)}
-              {getRoleTitle(userData?.role)}
+          <nav className="space-y-2">
+            <div className="mb-3 px-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+              Workspace
             </div>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToSection(item.id)}
+                  className={`w-full rounded-xl px-4 py-3 text-left text-sm font-bold transition-all flex items-center gap-3 border ${
+                    active
+                      ? "bg-stone-100 text-slate-950 border-stone-200 shadow-inner dark:bg-white/10 dark:text-white dark:border-white/10"
+                      : "text-slate-600 border-transparent hover:bg-stone-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 ${active ? "text-red-600 dark:text-red-400" : "text-slate-400"}`} />
+                  <span className="leading-tight">{item.label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 

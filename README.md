@@ -55,11 +55,5 @@ npm run dev
 \`\`\`
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Seed Data for Demo
-To easily demo the app, you can create these accounts via the signup page:
-- \`guest@safestay.com\` (Role: Guest)
-- \`staff@safestay.com\` (Role: Staff)
-- \`responder@safestay.com\` (Role: First Responder)
-- \`admin@safestay.com\` (Role: Administrator)
-
-*Note: In the demo build, there is a "Use Demo Admin Account" shortcut on the login screen which auto-fills the admin login details.*
+## Access Model
+Public signup supports Guest and Staff accounts only. Administrator access is restricted to Google Sign-In with the three allowlisted team emails configured in `NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST`. First Responder access is assigned internally by an administrator from the User Management panel.
