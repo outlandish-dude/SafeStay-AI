@@ -1,68 +1,134 @@
-````md
 # SafeStay AI
 
 **Detect faster. Respond smarter. Save lives.**
 
-SafeStay AI is an AI-powered real-time emergency coordination platform built for hospitality environments. It enables guests or staff to instantly report emergencies, uses Google Gemini to classify severity and generate operational summaries, and synchronizes alerts across staff, responders, and administrators in real time.
+SafeStay AI is an AI-powered real-time emergency coordination platform designed for hospitality environments such as hotels, hostels, and managed living spaces. It enables guests or staff to instantly report emergencies, leverages Google Gemini AI for intelligent triage, and synchronizes alerts across all stakeholders in real time.
 
-Built for **Solution Challenge 2026 India**.
+---
 
-## Live Demo
-- **Production:** https://safestayai.vercel.app/
+## 🚀 Live Demo
+👉 https://safestayai.vercel.app/
 
-## Problem Statement
-Hospitality venues often face high-stakes emergencies where critical information is fragmented between guests, staff, responders, and decision-makers. This leads to delayed detection, poor coordination, and slower response times when every second matters. SafeStay AI addresses this by providing a unified, AI-powered emergency coordination system designed specifically for hospitality operations.
+---
 
-## Key Features
-- **Instant Emergency Reporting**  
-  Guests and staff can quickly report fires, medical emergencies, or security incidents with context such as location and description.
+## 🧠 Problem Statement
 
-- **AI-Powered Incident Triage**  
-  Google Gemini automatically classifies incident type, assesses severity, generates concise operational summaries, and provides recommended response guidance.
+In hospitality environments, emergencies often lead to fragmented communication between guests, staff, responders, and administrators. This causes delays, confusion, and inefficient coordination during critical moments where response time is crucial.
 
-- **Role-Based Access Control**  
-  Dedicated real-time dashboards for Guests, Staff, First Responders, and Admins with secure, role-specific functionality.
+---
 
-- **Real-Time Incident Synchronization**  
-  Firebase Cloud Firestore listeners ensure live updates across all stakeholders, enabling faster coordination and response.
+## 💡 Our Solution
 
-- **Secure Privileged Access Model**  
-  Public users can only sign up as Guest or Staff. Admin access is restricted via Google Sign-In with an allowlisted authentication flow, and First Responder access is assigned internally by Admins.
+SafeStay AI provides a centralized AI-powered crisis coordination system that:
 
-## How It Works
-1. A **Guest or Staff** user reports an emergency.
-2. The incident is sent to the backend and analyzed by **Google Gemini**.
-3. Gemini generates:
-   - incident classification
-   - severity level
-   - summary
-   - response guidance
-4. The incident is stored in **Cloud Firestore**.
-5. **Staff and Admin** dashboards receive live updates in real time.
-6. An **Admin** can monitor, prioritize, and assign a **First Responder**.
-7. The **First Responder** updates mission status (En Route / In Progress / Resolved).
-8. The incident is tracked through completion and retained for operational visibility.
+- Enables instant emergency reporting
+- Uses AI to classify severity and generate summaries
+- Provides real-time safety guidance
+- Synchronizes incident updates across all roles
+- Ensures structured, role-based coordination
 
-## Tech Stack
-- **Frontend:** Next.js 14+ (App Router), TypeScript, Tailwind CSS, shadcn/ui (customized)
-- **Backend:** Next.js API Routes, Firebase Authentication, Cloud Firestore
-- **AI:** Google Gemini API (`gemini-1.5-flash`)
-- **Deployment:** Vercel
+---
 
-## Setup Instructions
+## ⚡ Key Features
+
+### 🔹 Instant Emergency Reporting
+Guests and staff can report incidents such as fire, medical emergencies, or suspicious activity with location and details.
+
+### 🔹 AI-Powered Triage (Google Gemini)
+- Classifies incident type
+- Assesses severity
+- Generates concise summaries
+- Provides recommended actions
+
+### 🔹 Real-Time Safety Guidance
+Users receive immediate AI-generated instructions based on the emergency.
+
+### 🔹 Role-Based Dashboards
+- **Guest** – Report incidents & track status
+- **Staff** – Monitor and acknowledge incidents
+- **First Responder** – Handle assigned missions
+- **Admin** – Full command center with control
+
+### 🔹 Live Synchronization
+Firebase Firestore ensures real-time updates across all users.
+
+### 🔹 Secure Access Control
+- Public users → Guest / Staff only  
+- Admin → Google Sign-In + allowlist  
+- First Responders → Assigned by Admin  
+
+---
+
+## 🔄 How It Works
+
+1. Guest/Staff reports an incident  
+2. Google Gemini analyzes the report  
+3. AI generates severity + summary + guidance  
+4. Firestore syncs data in real time  
+5. Staff & Admin receive alerts  
+6. Admin assigns a responder  
+7. Responder executes and updates status  
+8. Incident is resolved and logged  
+
+---
+
+## 🤖 AI Features
+
+Powered by Google Gemini:
+
+- Incident classification  
+- Severity assessment  
+- AI summaries  
+- Real-time safety guidance  
+- Response playbooks  
+- Escalation support  
+- Post-incident insights  
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- Next.js 14 (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+
+### Backend
+- Next.js API Routes
+- Firebase Authentication
+- Firebase Cloud Firestore
+
+### AI
+- Google Gemini API (gemini-1.5-flash)
+
+### Deployment
+- Vercel
+
+---
+
+## 🔐 Access Model
+
+- Public signup → Guest / Staff only  
+- Admin → Google Sign-In with allowlisted emails  
+- First Responder → Assigned internally by Admin  
+
+---
+
+## ⚙️ Setup Instructions
 
 ### 1. Clone & Install
-```bash
+\`\`\`bash
 git clone https://github.com/outlandish-dude/SafeStay-AI.git
 cd website
 npm install
-````
+\`\`\`
 
 ### 2. Environment Variables
+Create a \`.env.local\` file:
 
-Create a `.env.local` file in the root directory (use `.env.example` as a guide):
-
-```env
+\`\`\`env
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
@@ -70,65 +136,54 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
-# Google Gemini API Key
 GEMINI_API_KEY=your_gemini_api_key
 
-# Admin allowlist (comma-separated)
-NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST=your_admin_email_1,your_admin_email_2,your_admin_email_3
-```
+NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST=your_email@example.com
+\`\`\`
 
 ### 3. Firebase Setup
+- Enable Authentication (Email + Google)
+- Enable Firestore
+- Add authorized domains (localhost + production URL)
 
-1. Go to the **Firebase Console** and create a new project.
-2. Enable **Authentication**:
-
-   * Email/Password (for Guest/Staff)
-   * Google Sign-In (for Admin allowlisted accounts)
-3. Enable **Cloud Firestore**.
-4. Add a **Web App** and copy the Firebase config values into `.env.local`.
-5. In **Authentication → Settings → Authorized domains**, add:
-
-   * `localhost`
-   * your deployed Vercel domain (for example: `safestayai.vercel.app`)
-6. Configure Firestore rules appropriately for development/testing.
-
-### 4. Run the Development Server
-
-```bash
+### 4. Run Locally
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
 
-## Access Model
+## 🔮 Future Scope
 
-* **Public signup:** Guest and Staff only
-* **Admin access:** Restricted to Google Sign-In using the allowlisted team emails configured in `NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST`
-* **First Responder access:** Assigned internally by an Admin through the User Management / access control flow
+- Voice-based emergency reporting  
+- AI risk prediction & hotspot detection  
+- IoT & CCTV integration  
+- Mass emergency broadcast system  
+- Multi-property support  
+- Advanced analytics dashboard  
 
-## Suggested Demo Accounts
+---
 
-For local testing, you can create:
+## 🏆 Why SafeStay AI?
 
-* `guest@safestay.com` → Guest
-* `staff@safestay.com` → Staff
+SafeStay AI is not just an emergency reporting tool.  
+It is a **complete AI-powered crisis coordination platform** designed for real-world deployment.
 
-> Admin access is intentionally restricted and should not be publicly self-assigned.
+---
 
-## Future Scope
-
-* Multilingual voice-based emergency reporting
-* AI-powered hotspot and risk prediction
-* Indoor navigation assistance for responders
-* Mass-alert broadcasting to all guests during critical incidents
-* CCTV / IoT integration for automated incident detection
-* Multi-property support for hotel chains and hospitality groups
-* Advanced analytics and compliance reporting
-
-## Team
+## 👥 Team
 
 **Code Red Collective**
 
-Built for **Solution Challenge 2026 India** using Google technologies to improve emergency response coordination in hospitality environments.
+---
 
+## 🎯 Built For
+
+**Solution Challenge 2026 – Build with AI (India)**
+
+---
+
+## 📄 License
+
+This project is a hackathon prototype built for demonstration purposes.
 
